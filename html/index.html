@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Bootstrap 4 Example</title>
+        <title>Blockchain Visualisation</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link 
@@ -11,12 +11,20 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
         <link rel="stylesheet" href="../css/styles.css">
+        <link href="../css/toastr.min.css" rel="stylesheet" />
+        <script type="text/javascript" src="../js/toastr.min.js"></script>
     </head>
 
     <body>
         <div class = "page-header">
-            <img src="../images/proba.png"/>
+
+            <img src="../images/logo-01.png"/>
+
             <h1>Blockchain Visualisation</h1>
+
+            <a href="https://www.linkedin.com/in/vasilije-pantic-467a38140/">
+                <i class="fa fa-linkedin-square" style="font-size:36px;color:white"></i>
+            </a>
         </div>
 
         <div class="sidenav">
@@ -24,73 +32,121 @@
             <button class="dropdown-btn">[1] Upload the JSON file<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 1 :D</p>
+                <form action="javascript:funkcija1()">
+                    <div class="form-group">
+                        <label for="selectFiles">Email address:</label>
+                        <input type="file" class="form-control" id="selectFiles" value="Import" /><br />
+                    </div>
+                    <button id="import" type="submit" class="btn btn-light">Import</button>
+                    <div class="form-group">
+                        <label for="result">Password:</label>
+                        <textarea id="result" class="form-control"></textarea>
+                    </div>
+                </form> 
             </div>
 
             <button class="dropdown-btn">[2] Highlight the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 2 :D</p>
+                <form action="javascript:highlight_element_submit()">
+                    <div class="form-group">
+                        <label for="highlightElementId">Id of element:</label>
+                        <input type="text" class="form-control" id="highlightElementId">
+                    </div>
+                    <button type="submit" class="btn btn-light">Highlight</button>
+                </form>
             </div>
 
             <button class="dropdown-btn">[3] Unhighlight the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 3 :D</p>
+                <form action="javascript:unhighlight_element_submit()">
+                    <div class="form-group">
+                        <label for="unhighlightElementId">Id of element:</label>
+                        <input type="text" class="form-control" id="unhighlightElementId">
+                    </div>
+                    <button type="submit" class="btn btn-light">Unhighlight</button>
+                </form>
             </div>
 
             <button class="dropdown-btn ">[4] Time highlighting the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 4 :D</p>
+                <form action="javascript:time_highlighting_element_submit()">
+                    <div class="form-group">
+                        <label for="timeHighlightingElementId">Id of element:</label>
+                        <input type="text" class="form-control" id="timeHighlightingElementId">
+                    </div>
+                    <div class="form-group">
+                        <label for="highlightingElementTime">Time ( in seconds):</label>
+                        <input type="number" class="form-control" id="highlightingElementTime">
+                    </div>
+                    <button type="submit" class="btn btn-light">Highlight</button>
+                </form>
             </div>
 
             <button class="dropdown-btn ">[5] Show name of the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 5 :D</p>
+                <form action="javascript:show_name_submit()">
+                    <div class="form-group">
+                        <label for="showNameId">Id of element:</label>
+                        <input type="text" class="form-control" id="showNameId">
+                    </div>
+                    <button type="submit" class="btn btn-light">Show</button>
+                </form>
             </div>
 
             <button class="dropdown-btn">[6] Hide name of the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 6 :D</p>
+                <form action="javascript:hide_name_submit()">
+                    <div class="form-group">
+                        <label for="hideNameId">Id of element:</label>
+                        <input type="text" class="form-control" id="hideNameId">
+                    </div>
+                    <button type="submit" class="btn btn-light">Hide</button>
+                </form>
             </div>
-            
+
             <button class="dropdown-btn">[7] Time showing name of the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 7 :D</p>
+                <form action="javascript:time_showing_name_submit()">
+                    <div class="form-group">
+                        <label for="timeShowingNameId">Id of element:</label>
+                        <input type="text" class="form-control" id="timeShowingNameId">
+                    </div>
+                    <div class="form-group">
+                        <label for="showingNameTime">Time ( in seconds):</label>
+                        <input type="number" class="form-control" id="showingNameTime">
+                    </div>
+                    <button type="submit" class="btn btn-light">Show</button>
+                </form>
             </div>
-            
+
             <button class="dropdown-btn">[8] Send a message<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <p>Soon 8 :D</p>
+                <form action="javascript:send_a_message_submit()">
+                    <div class="form-group">
+                        <label for="fromId">Id from which element:</label>
+                        <input type="text" class="form-control" id="fromId">
+                    </div>
+                    <div class="form-group">
+                        <label for="toId">Id to which element:</label>
+                        <input type="text" class="form-control" id="toId">
+                    </div>
+                    <button type="submit" class="btn btn-light">Send</button>
+                </form>
             </div>
         </div>
 
         <!-- Page content -->
-        <div class="main" style="background-color: aquamarine">
+        <div class="main">
             <p>Hello svijete napaceni</p>
         </div>
 
-        <script>
-            //* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
-            var dropdown = document.getElementsByClassName("dropdown-btn");
-            var i;
-
-            for (i = 0; i < dropdown.length; i++) {
-                dropdown[i].addEventListener("click", function() {
-                    this.classList.toggle("active");
-                    var dropdownContent = this.nextElementSibling;
-                    if (dropdownContent.style.display === "block") {
-                        dropdownContent.style.display = "none";
-                    } else {
-                        dropdownContent.style.display = "block";
-                    }
-                });
-            }
-        </script>
+        <script src="../js/jsfile.js"></script>
     </body>
 </html>
