@@ -1,3 +1,5 @@
+// ================= TOASTR FOR ALERTS ====================
+
 function showMessage(message, type) {
     if (type != "success" && type != "error" && type != "warning"
         && type != "info") {
@@ -22,24 +24,8 @@ function showMessage(message, type) {
     toastr[type](message);
 }
 
-document.getElementById('import').onclick = function() {
-    var files = document.getElementById('selectFiles').files;
-    console.log(files);
-    if (files.length <= 0) {
-        return false;
-    }
 
-    var fr = new FileReader();
-
-    fr.onload = function(e) { 
-        console.log(e);
-        var result = JSON.parse(e.target.result);
-        var formatted = JSON.stringify(result, null, 2);
-        document.getElementById('result').value = formatted;
-    }
-
-    fr.readAsText(files.item(0));
-};
+// =================== DROPDOWN ==========================
 
 //* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
 var dropdown = document.getElementsByClassName("dropdown-btn");
@@ -57,11 +43,81 @@ for (i = 0; i < dropdown.length; i++) {
     });
 }
 
-function funkcija1(){
-    showMessage("Funkcija 1 pozvana","success");
+
+// ====================== PIXI =============================
+
+function findNode(id){
+    return nodes[id];
+}
+
+function drawAllNodes(item, index){
+    let graphics = new PIXI.Graphics();
+    graphics = drawBlock(graphics, item.position.x, item.position.y, item.color);
+    //app.stage.addChild(graphics);
+    item.graphics = graphics;
+    nodes[item.id] = item;
+}
+
+function drawAllVertices(item, index){
+    let graphics = new PIXI.Graphics();
+    let node1 = findNode(item.from);
+    let node2 = findNode(item.to);
+    graphics = drawLine(graphics, node1.position.x + 36, node1.position.y + 50, node2.position.x + 36, node2.position.y + 50, item.color);
+    //app.stage.addChild(graphics);
+    item.graphics = graphics;
+    vertices[item.id] = item;
+
+    /*
+    const arrowhead = new PIXI.Sprite(PIXI.Texture.from("https://img.favpng.com/7/3/7/arrow-computer-icons-sprite-png-favpng-2Et73kBc6NLSRVSGA4md6xBZp.jpg"));
+    arrowhead.crossOrigin = "";
+    arrowhead.anchor = 0.5;
+    arrowhead.x = 200;
+    arrowhead.y = 200;
+    arrowhead.rotation = Math.PI * 2 - Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
+    container.addChild(arrowhead);
+    */
+
+}
+
+// task 1
+function import_json_submit(){
+    var files = document.getElementById('selectFiles').files;
+    console.log(files);
+    if (files.length <= 0) {
+        showMessage("You need to import JSON file first!","warning");
+    }else{
+
+        var fr = new FileReader();
+
+        fr.onload = function(e) { 
+            try{
+                console.log(e);
+                var result = JSON.parse(e.target.result);
+
+                result.nodes.forEach(drawAllNodes);
+                result.vertices.forEach(drawAllVertices);
+
+                for (var key in vertices){
+                    app.stage.addChild(vertices[key].graphics);
+                }
+                for (var key in nodes){
+                    app.stage.addChild(nodes[key].graphics);
+                }
+
+                showMessage("Successfully imported JSON file","success");
+            }catch(err){
+                console.log(err.message);
+                showMessage("Wrong format of data!","error");
+            }
+        }
+
+        fr.readAsText(files.item(0));
+        //showMessage("Funkcija 1 pozvana","success");
+    }
 }
 
 function proba(){
+    //setTimeout(function(){proba()}, 5000);
     graphics.clear();
     graphics = drawBlock(graphics, 150, 250, "0xFFFFFF");
     graphics3.clear();
@@ -69,17 +125,46 @@ function proba(){
     showMessage("PROBAAAA","success");
 }
 
+// task 2
 function highlight_element_submit(){
-    graphics.clear();
-    graphics = drawBlock(graphics, 150, 350, "0x00FF00");
-    graphics3.clear();
-    graphics3 = drawLine(graphics3, 186, 400, 486, 300, "0x747474")
-    showMessage("Funkcija 2 pozvana","success");
-    setTimeout(function(){proba()}, 5000);
+    let nodeId = document.getElementById('highlightElementId').value;
+    if (nodeId == ""){
+        showMessage("You need to fill the Id textbox first!","warning");
+    }else{
+        let node = findNode(nodeId);
+        if (node){
+            node.graphics.clear();
+            node.graphics = drawBlock(node.graphics, node.position.x, node.position.y, "0xFFFFFF");
+            node.highlighted = true;
+            nodes[nodeId] = node;
+            showMessage("Successfully highlighted the element","success");
+        }else{
+            showMessage("There is no such element!","error");
+        }
+    }
 }
 
+//task 3
 function unhighlight_element_submit(){
-    showMessage("Funkcija 3 pozvana","success");
+    let nodeId = document.getElementById('unhighlightElementId').value;
+    if (nodeId == ""){
+        showMessage("You need to fill the Id textbox first!","warning");
+    }else{
+        let node = findNode(nodeId);
+        if (node){
+            if (node.highlighted){
+                node.graphics.clear();
+                node.graphics = drawBlock(node.graphics, node.position.x, node.position.y, node.color);
+                node.highlighted = false;
+                nodes[nodeId] = node;
+                showMessage("Successfully unhighlighted the element","success");
+            }else{
+                showMessage("Given element has not been highlighted!","info");
+            }
+        }else{
+            showMessage("There is no such element!","error");
+        }
+    }
 }
 
 function time_highlighting_element_submit(){
@@ -103,6 +188,9 @@ function send_a_message_submit(){
 }
 
 // ==== PIXIIIII ======
+let nodes = {};
+let vertices = {};
+
 window.addEventListener("resize", event => {
     scaleToWindow(app.view);
 });
@@ -141,6 +229,7 @@ function drawLine(graphics, x1, y1, x2, y2, color){
     graphics.lineStyle(3, color, 1);
     graphics.moveTo(x1, y1);
     graphics.lineTo(x2, y2);
+    //graphics.quadraticCurveTo(x1, y2, x2, y2);
     return graphics;
 }
 
@@ -154,6 +243,10 @@ app.view.style.display = "block";
 
 displayDiv.appendChild(app.view);
 
+const container = new PIXI.Container();
+app.stage.addChild(container);
+
+/*
 let graphics = new PIXI.Graphics();
 graphics = drawBlock(graphics, 150, 250, "0xFFFFFF");
 
@@ -161,8 +254,9 @@ let graphics2 = new PIXI.Graphics();
 graphics2 = drawBlock(graphics2, 450, 250, "0xFF0000");
 
 let graphics3 = new PIXI.Graphics();
-graphics3 = drawLine(graphics3, 186, 300, 486, 300, "0x747474")
+graphics3 = drawLine(graphics3, 186, 300, 486, 300, "0x747474");
 
 app.stage.addChild(graphics3);
 app.stage.addChild(graphics);
 app.stage.addChild(graphics2);
+*/

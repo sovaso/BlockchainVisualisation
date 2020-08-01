@@ -1,0 +1,60 @@
+{
+    "nodes": [
+        {
+            "id": 101,
+            "name": "node1",
+            "color": "0xFF0000",
+            "position": {
+                "x": 150,
+                "y": 150
+            }
+        },
+        {
+            "id": 102,
+            "name": "node2",
+            "color": "0x00FF00",
+            "position": {
+                "x": 450,
+                "y": 150
+            }
+        },
+        {
+            "id": 103,
+            "name": "node3",
+            "color": "0x0000FF",
+            "position": {
+                "x": 450,
+                "y": 350
+            }
+        },
+        {
+            "id": 104,
+            "name": "node4",
+            "color": "0xFFFF00",
+            "position": {
+                "x": 150,
+                "y": 350
+            }
+        }
+    ],
+    "vertices": [
+        {
+            "id": 201,
+            "from": 101,
+            "to": 102,
+            "color": "0x747474"
+        },
+        {
+            "id": 202,
+            "from": 102,
+            "to": 104,
+            "color": "0x747474"
+        },
+        {
+            "id": 203,
+            "from": 104,
+            "to": 103,
+            "color": "0x747474"
+        }
+    ]
+}

@@ -29,7 +29,7 @@
     float: left;
     padding-left: 20px;
     padding-right: 15px;
-    
+
 }
 
 .page-header .icons-container {
@@ -101,10 +101,19 @@
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
+    text-align: center;
 }
 
 .dropdown-container form {
     color: white;
+}
+
+.dropdown-container button {
+    float: none;
+}
+
+.dropdown-container label {
+    float: left;
 }
 
 /* Optional: Style the caret down icon */
