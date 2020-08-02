@@ -51,10 +51,21 @@ function findNode(id){
 }
 
 function drawAllNodes(item, index){
-    let graphics = new PIXI.Graphics();
-    graphics = drawBlock(graphics, item.position.x, item.position.y, item.color);
+    //let graphics = new PIXI.Graphics();
+    //graphics = drawBlock(graphics, item.position.x, item.position.y, item.color);
     //app.stage.addChild(graphics);
-    item.graphics = graphics;
+    
+    block = new PIXI.Sprite.from("../images/block-01.png");
+    console.log("CAOOOOOO");
+    console.log(item.id);
+    block.x = item.position.x;
+    block.y = item.position.y;
+    block.height = 100;
+    block.width = 75;
+    block.anchor.set(0.5);
+    block.tint = item.color;
+    
+    item.graphics = block;
     nodes[item.id] = item;
 }
 
@@ -62,20 +73,42 @@ function drawAllVertices(item, index){
     let graphics = new PIXI.Graphics();
     let node1 = findNode(item.from);
     let node2 = findNode(item.to);
-    graphics = drawLine(graphics, node1.position.x + 36, node1.position.y + 50, node2.position.x + 36, node2.position.y + 50, item.color);
+    graphics = drawLine(graphics, node1.position.x, node1.position.y, node2.position.x, node2.position.y, item.color);
     //app.stage.addChild(graphics);
     item.graphics = graphics;
     vertices[item.id] = item;
 
-    /*
-    const arrowhead = new PIXI.Sprite(PIXI.Texture.from("https://img.favpng.com/7/3/7/arrow-computer-icons-sprite-png-favpng-2Et73kBc6NLSRVSGA4md6xBZp.jpg"));
-    arrowhead.crossOrigin = "";
-    arrowhead.anchor = 0.5;
-    arrowhead.x = 200;
-    arrowhead.y = 200;
-    arrowhead.rotation = Math.PI * 2 - Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
-    container.addChild(arrowhead);
-    */
+    /* */
+    arrowhead = new PIXI.Sprite.from("../images/arrowhead3-01.png");
+    console.log("CAOOOOOO");
+    console.log(item.id);
+    arrowhead.x = node1.position.x + (node2.position.x - node1.position.x) * 0.67;
+    arrowhead.y = node1.position.y + (node2.position.y - node1.position.y) * 0.67;
+    arrowhead.height = 20;
+    arrowhead.width = 20;
+    arrowhead.anchor.set(0.5);
+    //arrowhead.tint = 0xadd8e6;
+    if (node2.position.y == node1.position.y){
+        if (node2.position.x < node1.position.x){
+            arrowhead.rotation = Math.PI;
+        }
+    } else if (node2.position.x == node1.position.x){
+        if (node2.position.y > node1.position.y){
+            arrowhead.rotation = 0.5 * Math.PI;
+        } else {
+            arrowhead.rotation = 1.5 * Math.PI;
+        }
+    } else {
+        if (node2.position.x > node1.position.x && node2.position.y > node1.position.y){
+            arrowhead.rotation = Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
+        }else if (node2.position.x > node1.position.x && node2.position.y < node1.position.y){
+            arrowhead.rotation = Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
+        }else{
+            arrowhead.rotation = Math.PI + Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
+        }
+    }
+    console.log(arrowhead);
+    app.stage.addChild(arrowhead);
 
 }
 
@@ -133,8 +166,7 @@ function highlight_element_submit(){
     }else{
         let node = findNode(nodeId);
         if (node){
-            node.graphics.clear();
-            node.graphics = drawBlock(node.graphics, node.position.x, node.position.y, "0xFFFFFF");
+            node.graphics.tint = 0xFFFFFF;
             node.highlighted = true;
             nodes[nodeId] = node;
             showMessage("Successfully highlighted the element","success");
@@ -153,8 +185,7 @@ function unhighlight_element_submit(){
         let node = findNode(nodeId);
         if (node){
             if (node.highlighted){
-                node.graphics.clear();
-                node.graphics = drawBlock(node.graphics, node.position.x, node.position.y, node.color);
+                node.graphics.tint = node.color;
                 node.highlighted = false;
                 nodes[nodeId] = node;
                 showMessage("Successfully unhighlighted the element","success");
@@ -184,8 +215,36 @@ function time_showing_name_submit(){
 }
 
 function send_a_message_submit(){
+    let node1 = findNode(101);
+    let node2 = findNode(102);
+    let circle = new PIXI.Graphics();
+    circle.beginFill(0x000000);
+    circle.lineStyle(4, 0x006600, 1);
+    circle.drawCircle(node1.position.x + 36, node1.position.y + 50, 20);
+    circle.endFill();
+    app.stage.addChild(circle);
+    var x = node1.position.x + 36;
+    var y = node1.position.y + 50;
+    for (var i = 0; i < 100; i++){
+        setTimeout(function(){
+            console.log(x);
+            console.log(y);
+            circle.clear();
+            //circle.x += (node2.position.x - node1.position.x) / 100;
+            //circle.y += (node2.position.y - node1.position.y) / 100;
+            circle.beginFill(0x000000);
+            circle.lineStyle(4, 0x006600, 1);
+            x += (node2.position.x - node1.position.x) / 100;
+            y += (node2.position.y - node1.position.y) / 100;
+            circle.drawCircle(x, y, 20);
+            circle.endFill();
+
+        }, 20);
+    }
+    circle.clear();
     showMessage("Funkcija 8 pozvana","success");
 }
+
 
 // ==== PIXIIIII ======
 let nodes = {};
@@ -243,8 +302,18 @@ app.view.style.display = "block";
 
 displayDiv.appendChild(app.view);
 
-const container = new PIXI.Container();
-app.stage.addChild(container);
+/*
+arrowhead = new PIXI.Sprite.from("../images/logo-01.png");
+console.log("CAOOOOOO222");
+arrowhead.x = 250;
+arrowhead.y = 250;
+arrowhead.height = 100;
+arrowhead.width = 100;
+arrowhead.anchor.set(0.5);
+//arrowhead.rotation = Math.PI * 2 - Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
+app.stage.addChild(arrowhead);
+console.log(arrowhead);
+*/
 
 /*
 let graphics = new PIXI.Graphics();
