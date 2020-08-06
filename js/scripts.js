@@ -54,7 +54,7 @@ function drawAllNodes(item, index){
     //let graphics = new PIXI.Graphics();
     //graphics = drawBlock(graphics, item.position.x, item.position.y, item.color);
     //app.stage.addChild(graphics);
-    
+
     block = new PIXI.Sprite.from("../images/block-01.png");
     console.log("CAOOOOOO");
     console.log(item.id);
@@ -64,7 +64,7 @@ function drawAllNodes(item, index){
     block.width = 75;
     block.anchor.set(0.5);
     block.tint = item.color;
-    
+
     item.graphics = block;
     nodes[item.id] = item;
 }
@@ -145,7 +145,6 @@ function import_json_submit(){
         }
 
         fr.readAsText(files.item(0));
-        //showMessage("Funkcija 1 pozvana","success");
     }
 }
 
@@ -166,7 +165,8 @@ function highlight_element_submit(){
     }else{
         let node = findNode(nodeId);
         if (node){
-            node.graphics.tint = 0xFFFFFF;
+            //node.graphics.tint = 0xFFFFFF;
+            node.graphics.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
             node.highlighted = true;
             nodes[nodeId] = node;
             showMessage("Successfully highlighted the element","success");
@@ -185,7 +185,8 @@ function unhighlight_element_submit(){
         let node = findNode(nodeId);
         if (node){
             if (node.highlighted){
-                node.graphics.tint = node.color;
+                //node.graphics.tint = node.color;
+                node.graphics.filters = [];
                 node.highlighted = false;
                 nodes[nodeId] = node;
                 showMessage("Successfully unhighlighted the element","success");
@@ -198,8 +199,29 @@ function unhighlight_element_submit(){
     }
 }
 
+// task 4
 function time_highlighting_element_submit(){
-    showMessage("Funkcija 4 pozvana","success");
+    let nodeId = document.getElementById('timeHighlightingElementId').value;
+    let time = document.getElementById('highlightingElementTime').value;
+    if (nodeId == "" || time == ""){
+        showMessage("You need to fill both textbox!","warning");
+    } else if(time <= 0 || time > 20) {
+        showMessage("Time must be in a range 1s to 20s!", "warning");
+    } else{
+        let node = findNode(nodeId);
+        if (!node.highlighted){
+            node.graphics.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
+            node.highlighted = true;
+            nodes[nodeId] = node;
+            showMessage("Successfully highlighted the element","success");
+        }
+        setTimeout(function(){
+            node.graphics.filters = [];
+            node.highlighted = false;
+            nodes[nodeId] = node;
+            showMessage("Successfully unhighlighted the element","success");
+        }, time * 1000);
+    }
 }
 
 function show_name_submit(){
@@ -217,31 +239,23 @@ function time_showing_name_submit(){
 function send_a_message_submit(){
     let node1 = findNode(101);
     let node2 = findNode(102);
-    let circle = new PIXI.Graphics();
-    circle.beginFill(0x000000);
-    circle.lineStyle(4, 0x006600, 1);
-    circle.drawCircle(node1.position.x + 36, node1.position.y + 50, 20);
-    circle.endFill();
-    app.stage.addChild(circle);
-    var x = node1.position.x + 36;
-    var y = node1.position.y + 50;
-    for (var i = 0; i < 100; i++){
-        setTimeout(function(){
-            console.log(x);
-            console.log(y);
-            circle.clear();
-            //circle.x += (node2.position.x - node1.position.x) / 100;
-            //circle.y += (node2.position.y - node1.position.y) / 100;
-            circle.beginFill(0x000000);
-            circle.lineStyle(4, 0x006600, 1);
-            x += (node2.position.x - node1.position.x) / 100;
-            y += (node2.position.y - node1.position.y) / 100;
-            circle.drawCircle(x, y, 20);
-            circle.endFill();
 
-        }, 20);
-    }
-    circle.clear();
+    block = new PIXI.Sprite.from("../images/message.png");
+    block.x = node1.position.x;
+    block.y = node2.position.y;
+    block.height = 20;
+    block.width = 15;
+    block.anchor.set(0.5);
+    block.tint = 0x000000;
+    app.stage.addChild(block);
+
+    console.log(app.ticker.elapsedMS);
+    app.ticker.add(function () {
+        block.x += (node2.position.x - node1.position.x)/3000 * app.ticker.elapsedMS;
+    });
+
+    setTimeout(function(){ app.ticker.stop();}, 3000);
+
     showMessage("Funkcija 8 pozvana","success");
 }
 
@@ -262,28 +276,6 @@ function scaleToWindow(appWin){
     return appWin;
 }
 
-function drawBlock(graphics, x, y, color){
-    graphics.lineStyle(1, 0x000000, 1);
-    graphics.beginFill(color);
-    graphics.drawRect(x, y, 72, 100);
-
-    graphics.moveTo(x, y);
-    graphics.lineTo(x + 25, y - 30);
-    graphics.lineTo(x + 97, y - 30);
-    graphics.lineTo(x + 72, y);
-    graphics.closePath();
-
-    graphics.moveTo(x + 72, y);
-    graphics.lineTo(x + 97, y - 30);
-    graphics.lineTo(x + 97, y + 70);
-    graphics.lineTo(x + 72, y + 100);
-    graphics.closePath();
-
-    graphics.endFill();
-
-    return graphics;
-}
-
 function drawLine(graphics, x1, y1, x2, y2, color){
     graphics.lineStyle(3, color, 1);
     graphics.moveTo(x1, y1);
@@ -302,30 +294,21 @@ app.view.style.display = "block";
 
 displayDiv.appendChild(app.view);
 
-/*
-arrowhead = new PIXI.Sprite.from("../images/logo-01.png");
-console.log("CAOOOOOO222");
-arrowhead.x = 250;
-arrowhead.y = 250;
-arrowhead.height = 100;
-arrowhead.width = 100;
-arrowhead.anchor.set(0.5);
-//arrowhead.rotation = Math.PI * 2 - Math.atan((node2.position.y - node1.position.y)/(node2.position.x - node1.position.x));
-app.stage.addChild(arrowhead);
-console.log(arrowhead);
-*/
+graphics1 = new PIXI.Graphics();
+graphics1.lineStyle(1.5, "0x343535", 1);
+graphics1.moveTo(0, app.view.height);
+graphics1.lineTo(app.view.width * 0.5, app.view.height * 0.67);
 
-/*
-let graphics = new PIXI.Graphics();
-graphics = drawBlock(graphics, 150, 250, "0xFFFFFF");
+graphics2 = new PIXI.Graphics();
+graphics2.lineStyle(1.5, "0x343535", 1);
+graphics2.moveTo(app.view.width, app.view.height);
+graphics2.lineTo(app.view.width * 0.5, app.view.height * 0.67);
 
-let graphics2 = new PIXI.Graphics();
-graphics2 = drawBlock(graphics2, 450, 250, "0xFF0000");
+graphics3 = new PIXI.Graphics();
+graphics3.lineStyle(1.5, "0x343535", 1);
+graphics3.moveTo(app.view.width * 0.5, 0);
+graphics3.lineTo(app.view.width * 0.5, app.view.height * 0.67);
 
-let graphics3 = new PIXI.Graphics();
-graphics3 = drawLine(graphics3, 186, 300, 486, 300, "0x747474");
-
-app.stage.addChild(graphics3);
-app.stage.addChild(graphics);
+app.stage.addChild(graphics1);
 app.stage.addChild(graphics2);
-*/
+app.stage.addChild(graphics3);
