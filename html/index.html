@@ -15,6 +15,7 @@
         <script type="text/javascript" src="../js/libs/toastr.min.js"></script>
         <script type="text/javascript" src="../js/libs/pixi.min.js"></script>
         <script type="text/javascript" src="../js/libs/pixi-filters.min.js"></script>
+        <script type="text/javascript" src="../js/libs/pixi-projection.min.js"></script>
     </head>
 
     <body>
@@ -137,12 +138,12 @@
             <div class="dropdown-container">
                 <form action="javascript:send_a_message_submit()">
                     <div class="form-group">
-                        <label for="fromId">Id from which element:</label>
-                        <input type="text" class="form-control" id="fromId">
+                        <label for="sendMessagePath">Sequence of vertices to send message ("A B C" where A,B,C are an id of a vertice):</label>
+                        <input type="text" class="form-control" id="sendMessagePath">
                     </div>
                     <div class="form-group">
-                        <label for="toId">Id to which element:</label>
-                        <input type="text" class="form-control" id="toId">
+                        <label for="sendMessageTime">Time ( in seconds):</label>
+                        <input type="number" class="form-control" id="sendMessageTime">
                     </div>
                     <button type="submit" class="btn btn-light">Send</button>
                 </form>
