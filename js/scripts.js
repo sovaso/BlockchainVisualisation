@@ -54,6 +54,58 @@ function findVertice(id){
     return vertices[id];
 }
 
+function updateNodes(){
+    for (var key in nodes){
+        nodes[key].position.x = nodes[key].graphics.position.x;
+        nodes[key].position.y = nodes[key].graphics.position.y;
+
+        if (nodes[key].nameShowed){
+            nodes[key].nodeName.x = nodes[key].graphics.position.x;
+            nodes[key].nodeName.y = nodes[key].graphics.position.y - nodes[key].graphics.height * 0.27;
+        }
+    }
+}
+
+function onDragStart(event) {
+    // store a reference to the data
+    // the reason for this is because of multitouch
+    // we want to track the movement of this particular touch
+    this.data = event.data;
+    this.alpha = 0.5;
+    this.dragging = true;
+}
+
+function onDragEnd() {
+    this.alpha = 1;
+    this.dragging = false;
+    // set the interaction data to null
+    this.data = null;
+
+    updateNodes();
+
+    for (var key in vertices){
+        app.stage.removeChild(vertices[key].arrowhead);
+        app.stage.removeChild(vertices[key].graphics);
+        drawAllVertices(vertices[key], key);
+    }
+
+    for (var key in vertices){
+        app.stage.addChild(vertices[key].graphics);
+    }
+
+    for (var key in vertices){
+        app.stage.addChild(vertices[key].arrowhead);
+    }
+}
+
+function onDragMove() {
+    if (this.dragging) {
+        const newPosition = this.data.getLocalPosition(this.parent);
+        this.x = newPosition.x;
+        this.y = newPosition.y;
+    }
+}
+
 function drawAllNodes(item, index){
 
     /*
@@ -81,14 +133,10 @@ function drawAllNodes(item, index){
     block.interactive = true;
     block.on('pointerover', (event) => onPointerOver(block, item.id));
     block.on('pointerout', (event) => onPointerOut(block, item.id));
-
-    /*
-    let step = 0;
-    app.ticker.add((delta) => {
-        step += delta;
-        block.rotation = step * 0.03;
-    });
-    */
+    block.on('pointerdown', onDragStart)
+        .on('pointerup', onDragEnd)
+        .on('pointerupoutside', onDragEnd)
+        .on('pointermove', onDragMove);
 
     item.graphics = block;
     nodes[item.id] = item;
@@ -134,7 +182,7 @@ function drawAllVertices(item, index){
     arrowhead.interactive = true;
     arrowhead.on('pointerover', (event) => onPointerOver(arrowhead, item.id));
     arrowhead.on('pointerout', (event) => onPointerOut(arrowhead, item.id));
-    
+
     //app.stage.addChild(arrowhead);
     item.arrowhead = arrowhead;
     vertices[item.id] = item;
@@ -146,7 +194,7 @@ function onPointerOver(object, text) {
 }
 
 function onPointerOut(object, text) {
-    textId.text = "-";
+    textId.text = "ID : -";
 }
 
 // task 1
@@ -163,11 +211,15 @@ function import_json_submit(){
             try{
                 console.log(e);
                 var result = JSON.parse(e.target.result);
-                
+
                 cleanStage();
 
                 result.nodes.forEach(drawAllNodes);
                 result.vertices.forEach(drawAllVertices);
+
+                for (var key in nodes){
+                    app.stage.addChild(nodes[key].graphics);
+                }
 
                 for (var key in vertices){
                     app.stage.addChild(vertices[key].graphics);
@@ -175,10 +227,6 @@ function import_json_submit(){
 
                 for (var key in vertices){
                     app.stage.addChild(vertices[key].arrowhead);
-                }
-
-                for (var key in nodes){
-                    app.stage.addChild(nodes[key].graphics);
                 }
 
                 showMessage("Successfully imported JSON file","success");
@@ -287,12 +335,57 @@ function show_name_submit(){
     }
 }
 
+// task 6
 function hide_name_submit(){
-    showMessage("Funkcija 6 pozvana","success");
+    let nodeId = document.getElementById('hideNameId').value;
+    if (nodeId == ""){
+        showMessage("You need to fill the Id textbox first!","warning");
+    }else{
+        let node = findNode(nodeId);
+        if (node){
+            if (node.nameShowed){
+                app.stage.removeChild(node.nodeName);
+                node.nameShowed = false;
+                nodes[nodeId] = node;
+                showMessage("Successfully hide the element","success");
+            }else{
+                showMessage("The name of given element has not been showned!","info");
+            }
+        }else{
+            showMessage("There is no such element!","error");
+        }
+    }
 }
 
+// task 7
 function time_showing_name_submit(){
-    showMessage("Funkcija 7 pozvana","success");
+    let nodeId = document.getElementById('timeShowingNameId').value;
+    let time = document.getElementById('showingNameTime').value;
+    if (nodeId == "" || time == ""){
+        showMessage("You need to fill both textbox!","warning");
+    } else if(time <= 0 || time > 20) {
+        showMessage("Time must be in a range 1s to 20s!", "warning");
+    } else{
+        let node = findNode(nodeId);
+        if (!node.nameShowed){
+            nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
+            nodeName.x = node.position.x;
+            nodeName.y = node.position.y - node.graphics.height * 0.27;
+            nodeName.anchor.set(0.5);
+            nodeName.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
+            node.nodeName = nodeName;
+            app.stage.addChild(nodeName);
+            node.nameShowed = true;
+            nodes[nodeId] = node;
+            showMessage("Successfully showed the name of the element","success");
+        }
+        setTimeout(function(){
+            app.stage.removeChild(node.nodeName);
+            node.nameShowed = false;
+            nodes[nodeId] = node;
+            showMessage("Successfully hide the element","success");
+        }, time * 1000);
+    }
 }
 
 // task 8
@@ -329,13 +422,20 @@ function send_a_message_submit(){
                 let node1 = findNode(vertice.from);
                 let node2 = findNode(vertice.to);
 
-                let k = function() {
-                    message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
-                    message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
-                }
+                let k;
 
-                setTimeout(function(){ app.ticker.add(k);}, i * (time * 1000 / path.length));
-                setTimeout(function(){ app.ticker.remove(k);}, (i + 1) * (time * 1000 / path.length));
+                setTimeout(function(){
+                    k = function() {
+                        message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                        message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                    }
+                    app.ticker.add(k);
+                }, i * (time * 1000 / path.length));
+                setTimeout(function(){ 
+                    app.ticker.remove(k);
+                    message.x = node2.position.x;
+                    message.y = node2.position.y;
+                }, (i + 1) * (time * 1000 / path.length));
 
             }
 
@@ -359,6 +459,11 @@ message.height = 30;
 message.width = 20;
 message.anchor.set(0.5);
 message.tint = 0x000000;
+//grid
+let gridLine1 = new PIXI.Graphics();
+let gridLine2 = new PIXI.Graphics();
+// is left rotation
+let isLeft;
 
 window.addEventListener("resize", event => {
     scaleToWindow(app.view);
@@ -381,34 +486,114 @@ function drawLine(graphics, x1, y1, x2, y2, color){
 }
 
 function drawBackgroundGrid(){
-    graphics = new PIXI.Graphics();
-    graphics2 = new PIXI.Graphics();
-    graphics.lineStyle(0.7
-                       , "0x343535", 1);
-    graphics2.lineStyle(0.7
+    gridLine1.lineStyle(0.7
                         , "0x343535", 1);
-    graphics.rotation = Math.PI * 0.29;
-    graphics2.rotation = Math.PI * 0.21;
+    gridLine2.lineStyle(0.7
+                        , "0x343535", 1);
+    gridLine1.rotation = Math.PI * 0.29;
+    gridLine2.rotation = Math.PI * 0.21;
 
     for (let i = -2 * app.view.height; i <= 3 * app.view.height; i += 50) {
-        graphics2.moveTo(-2 * app.view.width, i);
-        graphics2.lineTo(3 * app.view.width, i);
+        gridLine2.moveTo(-2 * app.view.width, i);
+        gridLine2.lineTo(3 * app.view.width, i);
     }
 
     for (let i = -2 * app.view.width; i <= 3 * app.view.width; i += 50) {
-        graphics.moveTo(i, 3 * app.view.height);
-        graphics.lineTo(i, -2 * app.view.height);
+        gridLine1.moveTo(i, 3 * app.view.height);
+        gridLine1.lineTo(i, -2 * app.view.height);
     }
 
-    app.stage.addChild(graphics);
-    app.stage.addChild(graphics2);
+    app.stage.addChild(gridLine1);
+    app.stage.addChild(gridLine2);
 
     const rectangle = new PIXI.Graphics();
     rectangle.beginFill(0xFFFFFF);
-    rectangle.drawRect(7/8 * app.view.width, 13/14 * app.view.height, 1/8 * app.view.width, 1/14 * app.view.height);
+    rectangle.drawRect(6/8 * app.view.width, 13/14 * app.view.height, 2/8 * app.view.width, 1/14 * app.view.height);
     rectangle.endFill();
+
+    let rotationLeft = new PIXI.Sprite.from("../images/rotation-left.png");
+    rotationLeft.x = 25/32 * app.view.width;
+    rotationLeft.y = 27/28 * app.view.height;
+    rotationLeft.height = 1/28 * app.view.height;
+    rotationLeft.width = 1/24 * app.view.width;
+    rotationLeft.anchor.set(0.5);
+    rotationLeft.interactive = true;
+    rotationLeft.buttonMode = true;
+    rotationLeft.on('pointerdown', function(){
+        isLeft = true;
+        app.ticker.add(rotateMap);
+    });
+    rotationLeft.on('pointerup', function(){
+        app.ticker.remove(rotateMap);
+    });
+
+    let rotationRight = new PIXI.Sprite.from("../images/rotation-right.png");
+    rotationRight.x = 27/32 * app.view.width;
+    rotationRight.y = 27/28 * app.view.height;
+    rotationRight.height = 1/28 * app.view.height;
+    rotationRight.width = 1/24 * app.view.width;
+    rotationRight.anchor.set(0.5);
+    rotationRight.interactive = true;
+    rotationRight.buttonMode = true;
+    rotationRight.on('pointerdown', function(){
+        isLeft = false;
+        app.ticker.add(rotateMap);
+    });
+    rotationRight.on('pointerup', function(){
+        app.ticker.remove(rotateMap);
+    });
+
+    let lines = new PIXI.Graphics();
+    lines.lineStyle(2, "0x000000", 1);
+    lines.moveTo(6/8 * app.view.width, app.view.height);
+    lines.lineTo(6/8 * app.view.width, 13/14 * app.view.height);
+    lines.lineTo(app.view.width, 13/14 * app.view.height);
+    lines.moveTo(7/8 * app.view.width, app.view.height);
+    lines.lineTo(7/8 * app.view.width, 13/14 * app.view.height);
+
     app.stage.addChild(rectangle);
     app.stage.addChild(textId);
+    app.stage.addChild(rotationLeft);
+    app.stage.addChild(rotationRight);
+    app.stage.addChild(lines);
+}
+
+function rotateMap(){
+    if (isLeft){
+        coef = 1;
+    } else {
+        coef = -1;
+    }
+    step = 0.003 * coef;
+    for (var key in nodes){
+        block = nodes[key].graphics;
+        x1 = Math.cos(step) * (block.x-app.view.width / 2) - Math.sin(step) * (block.y-app.view.height / 2) + app.view.width/2;
+        y1 = Math.sin(step) * (block.x-app.view.width / 2) + Math.cos(step) * (block.y-app.view.height / 2) + app.view.height/2;
+        block.x = x1;
+        block.y = y1;
+        nodes[key].graphics = block;
+        nodes[key].position.x = x1;
+        nodes[key].position.y = y1;
+
+        if (nodes[key].nameShowed){
+            nodes[key].nodeName.x = x1;
+            nodes[key].nodeName.y = y1 - nodes[key].graphics.height * 0.27;
+        }
+    }
+
+    for (var key in vertices){
+        app.stage.removeChild(vertices[key].arrowhead);
+        app.stage.removeChild(vertices[key].graphics);
+        drawAllVertices(vertices[key], key);
+    }
+
+    for (var key in vertices){
+        app.stage.addChild(vertices[key].graphics);
+    }
+
+    for (var key in vertices){
+        app.stage.addChild(vertices[key].arrowhead);
+    }
 }
 
 function cleanStage(){
