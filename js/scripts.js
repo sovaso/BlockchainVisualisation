@@ -66,6 +66,34 @@ function updateNodes(){
     }
 }
 
+function checkPosition(result){
+    for (var key in result){
+        if (!result[key].position.x || !result[key].position.y){
+            return false;
+        }
+    }
+    return true;
+}
+
+function generateNewPosition(result){
+    //let angle = 0;
+    console.log(result.length);
+    let angle = 2 * Math.PI / result.length;
+    x1 = app.view.width / 3;
+    y1 = app.view.height * 2/3;
+    for (var key in result){
+        result[key].position = {};
+        result[key].position.x = Math.cos(angle) * (x1 - app.view.width / 2) - Math.sin(angle) * (y1 -app.view.height / 2) + app.view.width/2;
+        console.log(result[key].position.x);
+        result[key].position.y = Math.sin(angle) * (x1 - app.view.width / 2) + Math.cos(angle) * (y1 -app.view.height / 2) + app.view.height/2;
+        x1 = result[key].position.x;
+        y1 = result[key].position.y;
+        //angle += step;
+        console.log(angle);
+    }
+    return result;
+}
+
 function onDragStart(event) {
     // store a reference to the data
     // the reason for this is because of multitouch
@@ -213,6 +241,11 @@ function import_json_submit(){
                 var result = JSON.parse(e.target.result);
 
                 cleanStage();
+                
+                if (!checkPosition(result.nodes)){
+                    console.log("pozvano");
+                    result.nodes = generateNewPosition(result.nodes);
+                }
 
                 result.nodes.forEach(drawAllNodes);
                 result.vertices.forEach(drawAllVertices);
@@ -231,6 +264,7 @@ function import_json_submit(){
 
                 showMessage("Successfully imported JSON file","success");
             }catch(err){
+                cleanStage();
                 console.log(err.message);
                 showMessage("Wrong format of data!","error");
             }
@@ -464,6 +498,9 @@ let gridLine1 = new PIXI.Graphics();
 let gridLine2 = new PIXI.Graphics();
 // is left rotation
 let isLeft;
+// container
+let container = new PIXI.Container();
+
 
 window.addEventListener("resize", event => {
     scaleToWindow(app.view);
@@ -503,8 +540,12 @@ function drawBackgroundGrid(){
         gridLine1.lineTo(i, -2 * app.view.height);
     }
 
-    app.stage.addChild(gridLine1);
-    app.stage.addChild(gridLine2);
+    //app.stage.addChild(gridLine1);
+    //app.stage.addChild(gridLine2);
+    
+    container.addChild(gridLine1);
+    container.addChild(gridLine2);
+    app.stage.addChild(container);
 
     const rectangle = new PIXI.Graphics();
     rectangle.beginFill(0xFFFFFF);
@@ -594,6 +635,8 @@ function rotateMap(){
     for (var key in vertices){
         app.stage.addChild(vertices[key].arrowhead);
     }
+    
+    container.rotation += coef * 0.003;
 }
 
 function cleanStage(){
@@ -622,3 +665,6 @@ textId.y = 27/28 * app.view.height;
 textId.anchor.set(0.5);
 
 drawBackgroundGrid();
+
+container.x = app.view.width / 2;
+container.y = app.view.height / 2;
