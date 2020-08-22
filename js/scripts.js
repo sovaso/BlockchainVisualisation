@@ -61,7 +61,7 @@ function updateNodes(){
 
         if (nodes[key].nameShowed){
             nodes[key].nodeName.x = nodes[key].graphics.position.x;
-            nodes[key].nodeName.y = nodes[key].graphics.position.y - nodes[key].graphics.height * 0.27;
+            nodes[key].nodeName.y = nodes[key].graphics.position.y - nodes[key].graphics.height * 0.85;
         }
     }
 }
@@ -240,8 +240,14 @@ function import_json_submit(){
                 console.log(e);
                 var result = JSON.parse(e.target.result);
 
+                if (result.background){
+                    showBackground = true;
+                } else {
+                    showBackground = false;
+                }
+
                 cleanStage();
-                
+
                 if (!checkPosition(result.nodes)){
                     console.log("pozvano");
                     result.nodes = generateNewPosition(result.nodes);
@@ -262,10 +268,13 @@ function import_json_submit(){
                     app.stage.addChild(vertices[key].arrowhead);
                 }
 
+                importedJSON = true;
                 showMessage("Successfully imported JSON file","success");
             }catch(err){
+                showBackground = false;
                 cleanStage();
                 console.log(err.message);
+                importedJSON = false;
                 showMessage("Wrong format of data!","error");
             }
         }
@@ -276,207 +285,234 @@ function import_json_submit(){
 
 // task 2
 function highlight_element_submit(){
-    let nodeId = document.getElementById('highlightElementId').value;
-    if (nodeId == ""){
-        showMessage("You need to fill the Id textbox first!","warning");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
     }else{
-        let node = findNode(nodeId);
-        if (node){
-            //node.graphics.tint = 0xFFFFFF;
-            node.graphics.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
-            node.highlighted = true;
-            nodes[nodeId] = node;
-            showMessage("Successfully highlighted the element","success");
+        let nodeId = document.getElementById('highlightElementId').value;
+        if (nodeId == ""){
+            showMessage("You need to fill the Id textbox first!","warning");
         }else{
-            showMessage("There is no such element!","error");
+            let node = findNode(nodeId);
+            if (node){
+                node.graphics.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                node.highlighted = true;
+                nodes[nodeId] = node;
+                showMessage("Successfully highlighted the element","success");
+            }else{
+                showMessage("There is no such element!","error");
+            }
         }
     }
 }
 
 //task 3
 function unhighlight_element_submit(){
-    let nodeId = document.getElementById('unhighlightElementId').value;
-    if (nodeId == ""){
-        showMessage("You need to fill the Id textbox first!","warning");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
     }else{
-        let node = findNode(nodeId);
-        if (node){
-            if (node.highlighted){
-                //node.graphics.tint = node.color;
-                node.graphics.filters = [];
-                node.highlighted = false;
-                nodes[nodeId] = node;
-                showMessage("Successfully unhighlighted the element","success");
-            }else{
-                showMessage("Given element has not been highlighted!","info");
-            }
+        let nodeId = document.getElementById('unhighlightElementId').value;
+        if (nodeId == ""){
+            showMessage("You need to fill the Id textbox first!","warning");
         }else{
-            showMessage("There is no such element!","error");
+            let node = findNode(nodeId);
+            if (node){
+                if (node.highlighted){
+                    //node.graphics.tint = node.color;
+                    node.graphics.filters = [];
+                    node.highlighted = false;
+                    nodes[nodeId] = node;
+                    showMessage("Successfully unhighlighted the element","success");
+                }else{
+                    showMessage("Given element has not been highlighted!","info");
+                }
+            }else{
+                showMessage("There is no such element!","error");
+            }
         }
     }
 }
 
 // task 4
 function time_highlighting_element_submit(){
-    let nodeId = document.getElementById('timeHighlightingElementId').value;
-    let time = document.getElementById('highlightingElementTime').value;
-    if (nodeId == "" || time == ""){
-        showMessage("You need to fill both textbox!","warning");
-    } else if(time <= 0 || time > 20) {
-        showMessage("Time must be in a range 1s to 20s!", "warning");
-    } else{
-        let node = findNode(nodeId);
-        if (!node.highlighted){
-            node.graphics.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
-            node.highlighted = true;
-            nodes[nodeId] = node;
-            showMessage("Successfully highlighted the element","success");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
+    }else{
+        let nodeId = document.getElementById('timeHighlightingElementId').value;
+        let time = document.getElementById('highlightingElementTime').value;
+        if (nodeId == "" || time == ""){
+            showMessage("You need to fill both textbox!","warning");
+        } else if(time <= 0 || time > 20) {
+            showMessage("Time must be in a range 1s to 20s!", "warning");
+        } else{
+            let node = findNode(nodeId);
+            if (!node.highlighted){
+                node.graphics.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                node.highlighted = true;
+                nodes[nodeId] = node;
+                showMessage("Successfully highlighted the element","success");
+            }
+            setTimeout(function(){
+                node.graphics.filters = [];
+                node.highlighted = false;
+                nodes[nodeId] = node;
+                showMessage("Successfully unhighlighted the element","success");
+            }, time * 1000);
         }
-        setTimeout(function(){
-            node.graphics.filters = [];
-            node.highlighted = false;
-            nodes[nodeId] = node;
-            showMessage("Successfully unhighlighted the element","success");
-        }, time * 1000);
     }
 }
 
 //task 5
 function show_name_submit(){
-    let nodeId = document.getElementById('showNameId').value;
-    if (nodeId == ""){
-        showMessage("You need to fill the Id textbox first!","warning");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
     }else{
-        let node = findNode(nodeId);
-        if (node){
-            if (!node.nameShowed){
-                nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
-                nodeName.x = node.position.x;
-                nodeName.y = node.position.y - node.graphics.height * 0.27;
-                nodeName.anchor.set(0.5);
-                nodeName.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
-                node.nodeName = nodeName;
-                app.stage.addChild(nodeName);
-                node.nameShowed = true;
-                nodes[nodeId] = node;
-                showMessage("Successfully showed the name of the element","success");
-            } else {
-                showMessage("Name for the given element has been already showned!","info");
-            }
+        let nodeId = document.getElementById('showNameId').value;
+        if (nodeId == ""){
+            showMessage("You need to fill the Id textbox first!","warning");
         }else{
-            showMessage("There is no such element!","error");
+            let node = findNode(nodeId);
+            if (node){
+                if (!node.nameShowed){
+                    nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
+                    nodeName.x = node.position.x;
+                    nodeName.y = node.position.y - node.graphics.height * 0.85;
+                    nodeName.anchor.set(0.5);
+                    nodeName.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                    node.nodeName = nodeName;
+                    app.stage.addChild(nodeName);
+                    node.nameShowed = true;
+                    nodes[nodeId] = node;
+                    showMessage("Successfully showed the name of the element","success");
+                } else {
+                    showMessage("Name for the given element has been already showned!","info");
+                }
+            }else{
+                showMessage("There is no such element!","error");
+            }
         }
     }
 }
 
 // task 6
 function hide_name_submit(){
-    let nodeId = document.getElementById('hideNameId').value;
-    if (nodeId == ""){
-        showMessage("You need to fill the Id textbox first!","warning");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
     }else{
-        let node = findNode(nodeId);
-        if (node){
-            if (node.nameShowed){
-                app.stage.removeChild(node.nodeName);
-                node.nameShowed = false;
-                nodes[nodeId] = node;
-                showMessage("Successfully hide the element","success");
-            }else{
-                showMessage("The name of given element has not been showned!","info");
-            }
+        let nodeId = document.getElementById('hideNameId').value;
+        if (nodeId == ""){
+            showMessage("You need to fill the Id textbox first!","warning");
         }else{
-            showMessage("There is no such element!","error");
+            let node = findNode(nodeId);
+            if (node){
+                if (node.nameShowed){
+                    app.stage.removeChild(node.nodeName);
+                    node.nameShowed = false;
+                    nodes[nodeId] = node;
+                    showMessage("Successfully hide the element","success");
+                }else{
+                    showMessage("The name of given element has not been showned!","info");
+                }
+            }else{
+                showMessage("There is no such element!","error");
+            }
         }
     }
 }
 
 // task 7
 function time_showing_name_submit(){
-    let nodeId = document.getElementById('timeShowingNameId').value;
-    let time = document.getElementById('showingNameTime').value;
-    if (nodeId == "" || time == ""){
-        showMessage("You need to fill both textbox!","warning");
-    } else if(time <= 0 || time > 20) {
-        showMessage("Time must be in a range 1s to 20s!", "warning");
-    } else{
-        let node = findNode(nodeId);
-        if (!node.nameShowed){
-            nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
-            nodeName.x = node.position.x;
-            nodeName.y = node.position.y - node.graphics.height * 0.27;
-            nodeName.anchor.set(0.5);
-            nodeName.filters = [new PIXI.filters.GlowFilter(15, 2, 1, 0xff9999, 0.5)];
-            node.nodeName = nodeName;
-            app.stage.addChild(nodeName);
-            node.nameShowed = true;
-            nodes[nodeId] = node;
-            showMessage("Successfully showed the name of the element","success");
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
+    }else{
+        let nodeId = document.getElementById('timeShowingNameId').value;
+        let time = document.getElementById('showingNameTime').value;
+        if (nodeId == "" || time == ""){
+            showMessage("You need to fill both textbox!","warning");
+        } else if(time <= 0 || time > 20) {
+            showMessage("Time must be in a range 1s to 20s!", "warning");
+        } else{
+            let node = findNode(nodeId);
+            if (!node.nameShowed){
+                nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
+                nodeName.x = node.position.x;
+                nodeName.y = node.position.y - node.graphics.height * 0.85;
+                nodeName.anchor.set(0.5);
+                nodeName.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                node.nodeName = nodeName;
+                app.stage.addChild(nodeName);
+                node.nameShowed = true;
+                nodes[nodeId] = node;
+                showMessage("Successfully showed the name of the element","success");
+            }
+            setTimeout(function(){
+                app.stage.removeChild(node.nodeName);
+                node.nameShowed = false;
+                nodes[nodeId] = node;
+                showMessage("Successfully hide the element","success");
+            }, time * 1000);
         }
-        setTimeout(function(){
-            app.stage.removeChild(node.nodeName);
-            node.nameShowed = false;
-            nodes[nodeId] = node;
-            showMessage("Successfully hide the element","success");
-        }, time * 1000);
     }
 }
 
 // task 8
 function send_a_message_submit(){
-    let paths = document.getElementById('sendMessagePath').value;
-    let time = document.getElementById('sendMessageTime').value;
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
+    }else{
+        let paths = document.getElementById('sendMessagePath').value;
+        let time = document.getElementById('sendMessageTime').value;
 
-    if (paths == "" || time == ""){
-        showMessage("You need to fill both textbox!","warning");
-    } else if(time <= 0 || time > 30) {
-        showMessage("Time must be in a range 1s to 30s!", "warning");
-    } else{
+        if (paths == "" || time == ""){
+            showMessage("You need to fill both textbox!","warning");
+        } else if(time <= 0 || time > 30) {
+            showMessage("Time must be in a range 1s to 30s!", "warning");
+        } else{
 
-        let allValid = true;
-        var path = paths.split(" ");
-        console.log(path.length);
-        for (var id in path){
-            if (!findVertice(path[id])){
-                showMessage("There is no such vertice with an id " + path[id],"warning");
-                allValid = false;
-                break;
+            let allValid = true;
+            var path = paths.split(" ");
+            console.log(path.length);
+            for (var id in path){
+                if (!findVertice(path[id])){
+                    showMessage("There is no such vertice with an id " + path[id],"warning");
+                    allValid = false;
+                    break;
+                }
             }
-        }
-        if (allValid){
+            if (allValid){
 
-            let vertice0 = findVertice(path[0]);
-            let node0 = findNode(vertice0.from);
-            message.x = node0.position.x;
-            message.y = node0.position.y;
-            app.stage.addChild(message);    
+                let vertice0 = findVertice(path[0]);
+                let node0 = findNode(vertice0.from);
+                message.x = node0.position.x;
+                message.y = node0.position.y;
+                app.stage.addChild(message);    
 
-            for (var i = 0; i < path.length; i++){
-                let vertice = findVertice(path[i]);
-                let node1 = findNode(vertice.from);
-                let node2 = findNode(vertice.to);
+                for (var i = 0; i < path.length; i++){
+                    let vertice = findVertice(path[i]);
+                    let node1 = findNode(vertice.from);
+                    let node2 = findNode(vertice.to);
 
-                let k;
+                    let k;
+
+                    setTimeout(function(){
+                        k = function() {
+                            message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                            message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                        }
+                        app.ticker.add(k);
+                    }, i * (time * 1000 / path.length));
+                    setTimeout(function(){ 
+                        app.ticker.remove(k);
+                        message.x = node2.position.x;
+                        message.y = node2.position.y;
+                    }, (i + 1) * (time * 1000 / path.length));
+
+                }
 
                 setTimeout(function(){
-                    k = function() {
-                        message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
-                        message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
-                    }
-                    app.ticker.add(k);
-                }, i * (time * 1000 / path.length));
-                setTimeout(function(){ 
-                    app.ticker.remove(k);
-                    message.x = node2.position.x;
-                    message.y = node2.position.y;
-                }, (i + 1) * (time * 1000 / path.length));
-
+                    showMessage("Succesfully sent a message!!", "success");
+                    app.stage.removeChild(message); 
+                }, time * 1000);   
             }
-
-            setTimeout(function(){
-                showMessage("Succesfully sent a message!!", "success");
-                app.stage.removeChild(message); 
-            }, time * 1000);   
         }
     }
 }
@@ -489,10 +525,9 @@ let vertices = {};
 let message = new PIXI.Sprite.from("../images/message.png");
 message.x = 0;
 message.y = 0;
-message.height = 30;
-message.width = 20;
+message.height = 36;
+message.width = 24;
 message.anchor.set(0.5);
-message.tint = 0x000000;
 //grid
 let gridLine1 = new PIXI.Graphics();
 let gridLine2 = new PIXI.Graphics();
@@ -500,6 +535,9 @@ let gridLine2 = new PIXI.Graphics();
 let isLeft;
 // container
 let container = new PIXI.Container();
+// background variable
+let showBackground = false;
+let importedJSON = false;
 
 
 window.addEventListener("resize", event => {
@@ -542,18 +580,20 @@ function drawBackgroundGrid(){
 
     //app.stage.addChild(gridLine1);
     //app.stage.addChild(gridLine2);
-    
+
     container.addChild(gridLine1);
     container.addChild(gridLine2);
-    app.stage.addChild(container);
+    if (showBackground){
+        app.stage.addChild(container);
+    }
 
     const rectangle = new PIXI.Graphics();
     rectangle.beginFill(0xFFFFFF);
-    rectangle.drawRect(6/8 * app.view.width, 13/14 * app.view.height, 2/8 * app.view.width, 1/14 * app.view.height);
+    rectangle.drawRect(5/8 * app.view.width, 13/14 * app.view.height, 3/8 * app.view.width, 1/14 * app.view.height);
     rectangle.endFill();
 
     let rotationLeft = new PIXI.Sprite.from("../images/rotation-left.png");
-    rotationLeft.x = 25/32 * app.view.width;
+    rotationLeft.x = 21/32 * app.view.width;
     rotationLeft.y = 27/28 * app.view.height;
     rotationLeft.height = 1/28 * app.view.height;
     rotationLeft.width = 1/24 * app.view.width;
@@ -569,7 +609,7 @@ function drawBackgroundGrid(){
     });
 
     let rotationRight = new PIXI.Sprite.from("../images/rotation-right.png");
-    rotationRight.x = 27/32 * app.view.width;
+    rotationRight.x = 23/32 * app.view.width;
     rotationRight.y = 27/28 * app.view.height;
     rotationRight.height = 1/28 * app.view.height;
     rotationRight.width = 1/24 * app.view.width;
@@ -586,11 +626,11 @@ function drawBackgroundGrid(){
 
     let lines = new PIXI.Graphics();
     lines.lineStyle(2, "0x000000", 1);
+    lines.moveTo(5/8 * app.view.width, app.view.height);
+    lines.lineTo(5/8 * app.view.width, 13/14 * app.view.height);
+    lines.lineTo(app.view.width, 13/14 * app.view.height);
     lines.moveTo(6/8 * app.view.width, app.view.height);
     lines.lineTo(6/8 * app.view.width, 13/14 * app.view.height);
-    lines.lineTo(app.view.width, 13/14 * app.view.height);
-    lines.moveTo(7/8 * app.view.width, app.view.height);
-    lines.lineTo(7/8 * app.view.width, 13/14 * app.view.height);
 
     app.stage.addChild(rectangle);
     app.stage.addChild(textId);
@@ -635,7 +675,7 @@ function rotateMap(){
     for (var key in vertices){
         app.stage.addChild(vertices[key].arrowhead);
     }
-    
+
     container.rotation += coef * 0.003;
 }
 
@@ -659,8 +699,8 @@ app.view.style.display = "block";
 displayDiv.appendChild(app.view);
 
 // for id of sprites
-let textId = new PIXI.Text("-", {fontFamily : 'Arial', fontSize: 16, fill: "black"});
-textId.x = 15/16 * app.view.width;
+let textId = new PIXI.Text("ID : -", {fontFamily : 'Arial', fontSize: 16, fill: "black"});
+textId.x = 14/16 * app.view.width;
 textId.y = 27/28 * app.view.height;
 textId.anchor.set(0.5);
 
