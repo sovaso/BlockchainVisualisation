@@ -27,7 +27,7 @@
 
             <div class="icons-container">
                 <h5>Follow us:</h5>
-                
+
                 <a href="https://www.linkedin.com/in/vasilije-pantic-467a38140/">
                     <i class="fa fa-linkedin-square" style="font-size:36px;color:white"></i>
                 </a>
@@ -38,8 +38,16 @@
             </div>
 
         </div>
+        
+        <div id="leftSide">
+            <a href="javascript:openSidenav()"><i class="fa fa-bars"></i> OPEN</a>
+        </div>
+        
+        <div id="rightSide"></div>
 
-        <div class="sidenav">
+        <div class="sidenav" id="sidenav">
+
+            <a href="javascript:closeSidenav()"><i class="fa fa-arrow-left"></i> CLOSE</a>
 
             <button class="dropdown-btn">[1] Upload the JSON file<i class="fa fa-caret-down"></i>
             </button>
@@ -144,6 +152,22 @@
                     <div class="form-group">
                         <label for="sendMessageTime">Time ( in seconds):</label>
                         <input type="number" class="form-control" id="sendMessageTime">
+                    </div>
+                    <button type="submit" class="btn btn-light">Send</button>
+                </form>
+            </div>
+
+            <button class="dropdown-btn">[9] Send a message with a highlight<i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+                <form action="javascript:send_a_message_highlight_submit()">
+                    <div class="form-group">
+                        <label for="sendMessageHighlightPath">Sequence of vertices to send message ("A B C" where A,B,C are an id of a vertice):</label>
+                        <input type="text" class="form-control" id="sendMessageHighlightPath">
+                    </div>
+                    <div class="form-group">
+                        <label for="sendMessageHighlightTime">Time ( in seconds):</label>
+                        <input type="number" class="form-control" id="sendMessageHighlightTime">
                     </div>
                     <button type="submit" class="btn btn-light">Send</button>
                 </form>

@@ -119,4 +119,33 @@
 .fa-caret-down {
     float: right;
     padding-right: 8px;
-} 
+}
+
+#leftSide {
+    position:absolute;
+    display: none;
+    background-color: #035d97;
+    width: 12.5%;
+    height: 85%;
+    margin-left: 0%; /* Same as the width of the sidenav */
+    top: 15%;
+    font-size: 20px; /* Increased text to enable scrolling */
+    padding-left: 8px;
+    padding-top: 3px;
+}
+
+#rightSide {
+    position:fixed;
+    display: none;
+    background-color: #035d97;
+    width: 12.5%;
+    height: 85%;
+    margin-left: 87.5%; /* Same as the width of the sidenav */
+    top: 15%;
+    font-size: 10px; /* Increased text to enable scrolling */
+}
+
+#leftSide a {
+    color: white;
+    font-size: 20px;
+}

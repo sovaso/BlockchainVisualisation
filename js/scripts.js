@@ -56,6 +56,18 @@ function findVertice(id){
 
 function updateNodes(){
     for (var key in nodes){
+        if (nodes[key].graphics.position.x < nodes[key].graphics.width / 2){
+            nodes[key].graphics.position.x = nodes[key].graphics.width / 2;
+        } else if (nodes[key].graphics.position.x > app.view.width - nodes[key].graphics.width / 2){
+            nodes[key].graphics.position.x = app.view.width - nodes[key].graphics.width / 2;
+        }
+
+        if (nodes[key].graphics.position.y < nodes[key].graphics.height / 2){
+            nodes[key].graphics.position.y = nodes[key].graphics.height / 2;
+        } else if (nodes[key].graphics.position.y > app.view.height - nodes[key].graphics.height / 2){
+            nodes[key].graphics.position.y = app.view.height - nodes[key].graphics.height / 2;
+        }
+
         nodes[key].position.x = nodes[key].graphics.position.x;
         nodes[key].position.y = nodes[key].graphics.position.y;
 
@@ -79,7 +91,7 @@ function generateNewPosition(result){
     //let angle = 0;
     console.log(result.length);
     let angle = 2 * Math.PI / result.length;
-    x1 = app.view.width / 3;
+    x1 = app.view.width / 4;
     y1 = app.view.height * 2/3;
     for (var key in result){
         result[key].position = {};
@@ -136,26 +148,13 @@ function onDragMove() {
 
 function drawAllNodes(item, index){
 
-    /*
-    block = new PIXI.Sprite.from("../images/block-01.png");
-    console.log("CAOOOOOO");
-    console.log(item.id);
-    block.x = item.position.x;
-    block.y = item.position.y;
-    block.height = 100;
-    block.width = 75;
-    block.anchor.set(0.5);
-    block.tint = item.color;
-    //block.convertTo3d();
-    */
-
     block = new PIXI.projection.Sprite2d.from("../images/block-01.png");
     block.anchor.set(0.5, 0.5);
     block.convertTo3d();
     block.proj.affine = PIXI.projection.AFFINE.AXIS_X;
     block.position.set(item.position.x, item.position.y);
-    block.height = 100;
-    block.width = 75;
+    block.height = 80; //100
+    block.width = 60; //75
     block.tint = item.color;
     // interaction
     block.interactive = true;
@@ -225,6 +224,22 @@ function onPointerOut(object, text) {
     textId.text = "ID : -";
 }
 
+//closing sidenav
+function closeSidenav(){
+    document.getElementById('sidenav').style.width = '0';
+    document.getElementById('main').style.marginLeft = "12.5%";
+    document.getElementById('leftSide').style.display = "block";
+    document.getElementById('rightSide').style.display = "block";
+}
+
+//opening sidenav
+function openSidenav(){
+    document.getElementById('sidenav').style.width = '25%';
+    document.getElementById('main').style.marginLeft = "25%";
+    document.getElementById('leftSide').style.display = "none";
+    document.getElementById('rightSide').style.display = "none";
+}
+
 // task 1
 function import_json_submit(){
     var files = document.getElementById('selectFiles').files;
@@ -254,6 +269,7 @@ function import_json_submit(){
                 }
 
                 result.nodes.forEach(drawAllNodes);
+                updateNodes();
                 result.vertices.forEach(drawAllVertices);
 
                 for (var key in nodes){
@@ -494,6 +510,8 @@ function send_a_message_submit(){
                     let k;
 
                     setTimeout(function(){
+                        message.x = node1.position.x;
+                        message.y = node1.position.y;
                         k = function() {
                             message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
                             message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
@@ -501,6 +519,84 @@ function send_a_message_submit(){
                         app.ticker.add(k);
                     }, i * (time * 1000 / path.length));
                     setTimeout(function(){ 
+                        app.ticker.remove(k);
+                        message.x = node2.position.x;
+                        message.y = node2.position.y;
+                    }, (i + 1) * (time * 1000 / path.length));
+
+                }
+
+                setTimeout(function(){
+                    showMessage("Succesfully sent a message!!", "success");
+                    app.stage.removeChild(message); 
+                }, time * 1000);   
+            }
+        }
+    }
+}
+
+// task 9
+function send_a_message_highlight_submit(){
+    if (!importedJSON){
+        showMessage("You need to import the JSON file first!","info");
+    }else{
+        let paths = document.getElementById('sendMessageHighlightPath').value;
+        let time = document.getElementById('sendMessageHighlightTime').value;
+
+        if (paths == "" || time == ""){
+            showMessage("You need to fill both textbox!","warning");
+        } else if(time <= 0 || time > 30) {
+            showMessage("Time must be in a range 1s to 30s!", "warning");
+        } else{
+
+            let allValid = true;
+            var path = paths.split(" ");
+            console.log(path.length);
+            for (var id in path){
+                if (!findVertice(path[id])){
+                    showMessage("There is no such vertice with an id " + path[id],"warning");
+                    allValid = false;
+                    break;
+                }
+            }
+            if (allValid){
+
+                let highlightLine = new PIXI.Graphics();
+                highlightLine.lineStyle(2.5, "0xFFD700", 1);
+                app.stage.addChild(highlightLine);
+
+                let vertice0 = findVertice(path[0]);
+                let node0 = findNode(vertice0.from);
+                message.x = node0.position.x;
+                message.y = node0.position.y;
+                app.stage.addChild(message);    
+
+                for (var i = 0; i < path.length; i++){
+                    let vertice = findVertice(path[i]);
+                    let node1 = findNode(vertice.from);
+                    let node2 = findNode(vertice.to);
+
+                    let k;
+
+                    setTimeout(function(){
+                        highlightLine.moveTo(node1.position.x, node1.position.y);
+                        node1.graphics.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xFFD700', quality: 0.1})];
+                        message.x = node1.position.x;
+                        message.y = node1.position.y;
+                        k = function() {
+                            message.x += (node2.position.x - node1.position.x)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                            message.y += (node2.position.y - node1.position.y)/(time * 1000 / path.length) * app.ticker.elapsedMS;
+                            highlightLine.clear();
+                            highlightLine.lineStyle(2.5, "0xFFD700", 1);
+                            highlightLine.moveTo(node1.position.x, node1.position.y);
+                            highlightLine.lineTo(message.x, message.y);
+                        }
+                        app.ticker.add(k);
+                    }, i * (time * 1000 / path.length));
+                    setTimeout(function(){ 
+                        highlightLine.clear();
+                        highlightLine.lineStyle(2.5, "0xFFD700", 1);
+                        node1.graphics.filters = [];
                         app.ticker.remove(k);
                         message.x = node2.position.x;
                         message.y = node2.position.y;
@@ -553,7 +649,7 @@ function scaleToWindow(appWin){
 }
 
 function drawLine(graphics, x1, y1, x2, y2, color){
-    graphics.lineStyle(3, color, 1);
+    graphics.lineStyle(2.5, color, 1);
     graphics.moveTo(x1, y1);
     graphics.lineTo(x2, y2);
     //graphics.quadraticCurveTo(x1, y2, x2, y2);
@@ -578,9 +674,6 @@ function drawBackgroundGrid(){
         gridLine1.lineTo(i, -2 * app.view.height);
     }
 
-    //app.stage.addChild(gridLine1);
-    //app.stage.addChild(gridLine2);
-
     container.addChild(gridLine1);
     container.addChild(gridLine2);
     if (showBackground){
@@ -589,14 +682,14 @@ function drawBackgroundGrid(){
 
     const rectangle = new PIXI.Graphics();
     rectangle.beginFill(0xFFFFFF);
-    rectangle.drawRect(5/8 * app.view.width, 13/14 * app.view.height, 3/8 * app.view.width, 1/14 * app.view.height);
+    rectangle.drawRect(4/8 * app.view.width, 13/14 * app.view.height, 4/8 * app.view.width, 1/14 * app.view.height);
     rectangle.endFill();
 
     let rotationLeft = new PIXI.Sprite.from("../images/rotation-left.png");
     rotationLeft.x = 21/32 * app.view.width;
     rotationLeft.y = 27/28 * app.view.height;
     rotationLeft.height = 1/28 * app.view.height;
-    rotationLeft.width = 1/24 * app.view.width;
+    rotationLeft.width = 1/28 * app.view.width;
     rotationLeft.anchor.set(0.5);
     rotationLeft.interactive = true;
     rotationLeft.buttonMode = true;
@@ -606,13 +699,27 @@ function drawBackgroundGrid(){
     });
     rotationLeft.on('pointerup', function(){
         app.ticker.remove(rotateMap);
+        updateNodes();
+        for (var key in vertices){
+            app.stage.removeChild(vertices[key].arrowhead);
+            app.stage.removeChild(vertices[key].graphics);
+            drawAllVertices(vertices[key], key);
+        }
+
+        for (var key in vertices){
+            app.stage.addChild(vertices[key].graphics);
+        }
+
+        for (var key in vertices){
+            app.stage.addChild(vertices[key].arrowhead);
+        }
     });
 
     let rotationRight = new PIXI.Sprite.from("../images/rotation-right.png");
     rotationRight.x = 23/32 * app.view.width;
     rotationRight.y = 27/28 * app.view.height;
     rotationRight.height = 1/28 * app.view.height;
-    rotationRight.width = 1/24 * app.view.width;
+    rotationRight.width = 1/28 * app.view.width;
     rotationRight.anchor.set(0.5);
     rotationRight.interactive = true;
     rotationRight.buttonMode = true;
@@ -622,13 +729,99 @@ function drawBackgroundGrid(){
     });
     rotationRight.on('pointerup', function(){
         app.ticker.remove(rotateMap);
+        updateNodes();
+        for (var key in vertices){
+            app.stage.removeChild(vertices[key].arrowhead);
+            app.stage.removeChild(vertices[key].graphics);
+            drawAllVertices(vertices[key], key);
+        }
+
+        for (var key in vertices){
+            app.stage.addChild(vertices[key].graphics);
+        }
+
+        for (var key in vertices){
+            app.stage.addChild(vertices[key].arrowhead);
+        }
+    });
+
+    let plusSign = new PIXI.Sprite.from("../images/plus.png");
+    plusSign.x = 17/32 * app.view.width;
+    plusSign.y = 27/28 * app.view.height;
+    plusSign.height = 1/28 * app.view.height;
+    plusSign.width = 1/32 * app.view.width;
+    plusSign.anchor.set(0.5);
+    plusSign.interactive = true;
+    plusSign.buttonMode = true;
+    plusSign.on('pointerdown', function(){
+        for (var key in nodes){
+            nodes[key].graphics.scale.x *= 1.05;
+            nodes[key].graphics.scale.y *= 1.05;
+            if (nodes[key].graphics.width > 150){
+                nodes[key].graphics.width = 150;
+            }
+            if (nodes[key].graphics.height > 200){
+                nodes[key].graphics.height = 200;
+            }
+            updateNodes();
+            for (var key in vertices){
+                app.stage.removeChild(vertices[key].arrowhead);
+                app.stage.removeChild(vertices[key].graphics);
+                drawAllVertices(vertices[key], key);
+            }
+
+            for (var key in vertices){
+                app.stage.addChild(vertices[key].graphics);
+            }
+
+            for (var key in vertices){
+                app.stage.addChild(vertices[key].arrowhead);
+            }
+        }
+    });
+
+    let minusSign = new PIXI.Sprite.from("../images/minus.png");
+    minusSign.x = 19/32 * app.view.width;
+    minusSign.y = 27/28 * app.view.height;
+    minusSign.height = 1/28 * app.view.height;
+    minusSign.width = 1/32 * app.view.width;
+    minusSign.anchor.set(0.5);
+    minusSign.interactive = true;
+    minusSign.buttonMode = true;
+    minusSign.on('pointerdown', function(){
+        for (var key in nodes){
+            nodes[key].graphics.scale.x *= 0.95;
+            nodes[key].graphics.scale.y *= 0.95;
+            if (nodes[key].graphics.width < 45){
+                nodes[key].graphics.width = 45;
+            }
+            if (nodes[key].graphics.height < 60){
+                nodes[key].graphics.height = 60;
+            }
+            updateNodes();
+            for (var key in vertices){
+                app.stage.removeChild(vertices[key].arrowhead);
+                app.stage.removeChild(vertices[key].graphics);
+                drawAllVertices(vertices[key], key);
+            }
+
+            for (var key in vertices){
+                app.stage.addChild(vertices[key].graphics);
+            }
+
+            for (var key in vertices){
+                app.stage.addChild(vertices[key].arrowhead);
+            }
+        }
     });
 
     let lines = new PIXI.Graphics();
     lines.lineStyle(2, "0x000000", 1);
+    lines.moveTo(4/8 * app.view.width, app.view.height);
+    lines.lineTo(4/8 * app.view.width, 13/14 * app.view.height);
+    lines.lineTo(app.view.width, 13/14 * app.view.height);
     lines.moveTo(5/8 * app.view.width, app.view.height);
     lines.lineTo(5/8 * app.view.width, 13/14 * app.view.height);
-    lines.lineTo(app.view.width, 13/14 * app.view.height);
     lines.moveTo(6/8 * app.view.width, app.view.height);
     lines.lineTo(6/8 * app.view.width, 13/14 * app.view.height);
 
@@ -636,6 +829,8 @@ function drawBackgroundGrid(){
     app.stage.addChild(textId);
     app.stage.addChild(rotationLeft);
     app.stage.addChild(rotationRight);
+    app.stage.addChild(plusSign);
+    app.stage.addChild(minusSign);
     app.stage.addChild(lines);
 }
 
