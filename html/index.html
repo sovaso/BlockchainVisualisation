@@ -20,7 +20,6 @@
 
     <body>
         <div class = "page-header">
-
             <img src="../images/logo-01.png"/>
 
             <h1>Blockchain Visualisation</h1>
@@ -36,7 +35,6 @@
                     <i class="fa fa-github-square" style="font-size:36px;color:white"></i>
                 </a>
             </div>
-
         </div>
         
         <div id="leftSide">
@@ -46,7 +44,6 @@
         <div id="rightSide"></div>
 
         <div class="sidenav" id="sidenav">
-
             <a href="javascript:closeSidenav()"><i class="fa fa-arrow-left"></i> CLOSE</a>
 
             <button class="dropdown-btn">[1] Upload the JSON file<i class="fa fa-caret-down"></i>
@@ -101,41 +98,49 @@
                 </form>
             </div>
 
-            <button class="dropdown-btn ">[5] Show name of the element<i class="fa fa-caret-down"></i>
+            <button class="dropdown-btn ">[5] Show text for the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <form action="javascript:show_name_submit()">
+                <form action="javascript:show_text_submit()">
                     <div class="form-group">
-                        <label for="showNameId">Id of element:</label>
-                        <input type="text" class="form-control" id="showNameId">
+                        <label for="showTextId">Id of element:</label>
+                        <input type="text" class="form-control" id="showTextId">
+                    </div>
+                    <div class="form-group">
+                        <label for="showTextContent">Text to display (max 100 characters):</label>
+                        <input type="textarea" maxlength="100" class="form-control" id="showTextContent">
                     </div>
                     <button type="submit" class="btn btn-light">Show</button>
                 </form>
             </div>
 
-            <button class="dropdown-btn">[6] Hide name of the element<i class="fa fa-caret-down"></i>
+            <button class="dropdown-btn">[6] Hide text from the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <form action="javascript:hide_name_submit()">
+                <form action="javascript:hide_text_submit()">
                     <div class="form-group">
-                        <label for="hideNameId">Id of element:</label>
-                        <input type="text" class="form-control" id="hideNameId">
+                        <label for="hideTextId">Id of element:</label>
+                        <input type="text" class="form-control" id="hideTextId">
                     </div>
                     <button type="submit" class="btn btn-light">Hide</button>
                 </form>
             </div>
 
-            <button class="dropdown-btn">[7] Time showing name of the element<i class="fa fa-caret-down"></i>
+            <button class="dropdown-btn">[7] Time showing text for the element<i class="fa fa-caret-down"></i>
             </button>
             <div class="dropdown-container">
-                <form action="javascript:time_showing_name_submit()">
+                <form action="javascript:time_showing_text_submit()">
                     <div class="form-group">
-                        <label for="timeShowingNameId">Id of element:</label>
-                        <input type="text" class="form-control" id="timeShowingNameId">
+                        <label for="timeShowingTextId">Id of element:</label>
+                        <input type="text" class="form-control" id="timeShowingTextId">
                     </div>
                     <div class="form-group">
-                        <label for="showingNameTime">Time ( in seconds):</label>
-                        <input type="number" class="form-control" id="showingNameTime">
+                        <label for="timeShowingTextContent">Text to display (max 100 characters):</label>
+                        <input type="textarea" maxlength="100" class="form-control" id="timeShowingTextContent">
+                    </div>
+                    <div class="form-group">
+                        <label for="showingTextTime">Time ( in seconds):</label>
+                        <input type="number" class="form-control" id="showingTextTime">
                     </div>
                     <button type="submit" class="btn btn-light">Show</button>
                 </form>
@@ -174,7 +179,6 @@
             </div>
         </div>
 
-        <!-- Page content -->
         <div class="main" id="main">
         </div>
 

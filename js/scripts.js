@@ -44,16 +44,21 @@ for (i = 0; i < dropdown.length; i++) {
 }
 
 
-// ====================== PIXI =============================
+// ====================== PIXI.JS UTILITY FUNCTIONS =============================
 
+// function to find a node based on id
 function findNode(id){
     return nodes[id];
 }
 
+
+// function to find a vertice based on id
 function findVertice(id){
     return vertices[id];
 }
 
+
+// whenever some event like rotate, drag... happen, we need to update positions of nodes and text attached to it
 function updateNodes(){
     for (var key in nodes){
         if (nodes[key].graphics.position.x < nodes[key].graphics.width / 2){
@@ -71,13 +76,15 @@ function updateNodes(){
         nodes[key].position.x = nodes[key].graphics.position.x;
         nodes[key].position.y = nodes[key].graphics.position.y;
 
-        if (nodes[key].nameShowed){
-            nodes[key].nodeName.x = nodes[key].graphics.position.x;
-            nodes[key].nodeName.y = nodes[key].graphics.position.y - nodes[key].graphics.height * 0.85;
+        if (nodes[key].textShowed){
+            nodes[key].nodeText.x = nodes[key].graphics.position.x;
+            nodes[key].nodeText.y = nodes[key].graphics.position.y - nodes[key].graphics.height * 0.9;
         }
     }
 }
 
+
+// checking if each of nodes have defined their position
 function checkPosition(result){
     for (var key in result){
         if (!result[key].position.x || !result[key].position.y){
@@ -87,9 +94,9 @@ function checkPosition(result){
     return true;
 }
 
+
+// in case there is a node without a position, we need to generate new positions for nodes
 function generateNewPosition(result){
-    //let angle = 0;
-    console.log(result.length);
     let angle = 2 * Math.PI / result.length;
     x1 = app.view.width / 4;
     y1 = app.view.height * 2/3;
@@ -100,21 +107,20 @@ function generateNewPosition(result){
         result[key].position.y = Math.sin(angle) * (x1 - app.view.width / 2) + Math.cos(angle) * (y1 -app.view.height / 2) + app.view.height/2;
         x1 = result[key].position.x;
         y1 = result[key].position.y;
-        //angle += step;
-        console.log(angle);
     }
     return result;
 }
 
+
+// event that defines what happens on start of the dragging block
 function onDragStart(event) {
-    // store a reference to the data
-    // the reason for this is because of multitouch
-    // we want to track the movement of this particular touch
     this.data = event.data;
     this.alpha = 0.5;
     this.dragging = true;
 }
 
+
+// event that defines what happens on end of the dragging block
 function onDragEnd() {
     this.alpha = 1;
     this.dragging = false;
@@ -138,6 +144,8 @@ function onDragEnd() {
     }
 }
 
+
+// event that defines what happens while dragging a block
 function onDragMove() {
     if (this.dragging) {
         const newPosition = this.data.getLocalPosition(this.parent);
@@ -146,6 +154,8 @@ function onDragMove() {
     }
 }
 
+
+// function that put all nodes on PIXI.js window so we can play with them
 function drawAllNodes(item, index){
 
     block = new PIXI.projection.Sprite2d.from("../images/block-01.png");
@@ -169,23 +179,22 @@ function drawAllNodes(item, index){
     nodes[item.id] = item;
 }
 
+
+// function that draws all vertices that are defined in the file
 function drawAllVertices(item, index){
     let graphics = new PIXI.Graphics();
     let node1 = findNode(item.from);
     let node2 = findNode(item.to);
     graphics = drawLine(graphics, node1.position.x, node1.position.y, node2.position.x, node2.position.y, item.color);
-    //app.stage.addChild(graphics);
     item.graphics = graphics;
     vertices[item.id] = item;
 
-    /* */
     arrowhead = new PIXI.Sprite.from("../images/arrowhead3-01.png");
     arrowhead.x = node1.position.x + (node2.position.x - node1.position.x) * 0.67;
     arrowhead.y = node1.position.y + (node2.position.y - node1.position.y) * 0.67;
     arrowhead.height = 20;
     arrowhead.width = 20;
     arrowhead.anchor.set(0.5);
-    //arrowhead.tint = 0xadd8e6;
     if (node2.position.y == node1.position.y){
         if (node2.position.x < node1.position.x){
             arrowhead.rotation = Math.PI;
@@ -210,21 +219,23 @@ function drawAllVertices(item, index){
     arrowhead.on('pointerover', (event) => onPointerOver(arrowhead, item.id));
     arrowhead.on('pointerout', (event) => onPointerOut(arrowhead, item.id));
 
-    //app.stage.addChild(arrowhead);
     item.arrowhead = arrowhead;
     vertices[item.id] = item;
-
 }
 
+
+// when point over a block or a vertice, in the down right corner id of the block will show
 function onPointerOver(object, text) {
     textId.text = "ID : " + text;
 }
 
+// when pointer is not over a block or a vertice, there is nothing showing
 function onPointerOut(object, text) {
     textId.text = "ID : -";
 }
 
-//closing sidenav
+
+//closing sidenav function
 function closeSidenav(){
     document.getElementById('sidenav').style.width = '0';
     document.getElementById('main').style.marginLeft = "12.5%";
@@ -232,13 +243,15 @@ function closeSidenav(){
     document.getElementById('rightSide').style.display = "block";
 }
 
-//opening sidenav
+
+//opening sidenav function
 function openSidenav(){
     document.getElementById('sidenav').style.width = '25%';
     document.getElementById('main').style.marginLeft = "25%";
     document.getElementById('leftSide').style.display = "none";
     document.getElementById('rightSide').style.display = "none";
 }
+
 
 // task 1
 function import_json_submit(){
@@ -299,6 +312,7 @@ function import_json_submit(){
     }
 }
 
+
 // task 2
 function highlight_element_submit(){
     if (!importedJSON){
@@ -320,6 +334,7 @@ function highlight_element_submit(){
         }
     }
 }
+
 
 //task 3
 function unhighlight_element_submit(){
@@ -347,6 +362,7 @@ function unhighlight_element_submit(){
         }
     }
 }
+
 
 // task 4
 function time_highlighting_element_submit(){
@@ -377,30 +393,33 @@ function time_highlighting_element_submit(){
     }
 }
 
+
 //task 5
-function show_name_submit(){
+function show_text_submit(){
     if (!importedJSON){
         showMessage("You need to import the JSON file first!","info");
     }else{
-        let nodeId = document.getElementById('showNameId').value;
-        if (nodeId == ""){
-            showMessage("You need to fill the Id textbox first!","warning");
+        let nodeId = document.getElementById('showTextId').value;
+        let text = document.getElementById('showTextContent').value;
+        if (nodeId == "" || text == ""){
+            showMessage("You need to fill both textbox!","warning");
         }else{
             let node = findNode(nodeId);
             if (node){
-                if (!node.nameShowed){
-                    nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
-                    nodeName.x = node.position.x;
-                    nodeName.y = node.position.y - node.graphics.height * 0.85;
-                    nodeName.anchor.set(0.5);
-                    nodeName.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
-                    node.nodeName = nodeName;
-                    app.stage.addChild(nodeName);
-                    node.nameShowed = true;
+                if (!node.textShowed){
+                    nodeText = new PIXI.Text(text, {fontFamily : 'Arial', fontSize: 14, fill: "black", wordWrap: true, wordWrapWidth: 350});
+                    nodeText.x = node.position.x;
+                    nodeText.y = node.position.y - node.graphics.height * 0.9;
+                    nodeText.anchor.set(0.5);
+                    nodeText.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                    node.nodeText = nodeText;
+                    app.stage.addChild(nodeText);
+                    node.textShowed = true;
                     nodes[nodeId] = node;
-                    showMessage("Successfully showed the name of the element","success");
+                    showMessage("Successfully showed the text for the element","success");
                 } else {
-                    showMessage("Name for the given element has been already showned!","info");
+                    node.nodeText.text = text;
+                    showMessage("Successfully showed the text for the element","success");
                 }
             }else{
                 showMessage("There is no such element!","error");
@@ -408,25 +427,26 @@ function show_name_submit(){
         }
     }
 }
+
 
 // task 6
-function hide_name_submit(){
+function hide_text_submit(){
     if (!importedJSON){
         showMessage("You need to import the JSON file first!","info");
     }else{
-        let nodeId = document.getElementById('hideNameId').value;
+        let nodeId = document.getElementById('hideTextId').value;
         if (nodeId == ""){
             showMessage("You need to fill the Id textbox first!","warning");
         }else{
             let node = findNode(nodeId);
             if (node){
-                if (node.nameShowed){
-                    app.stage.removeChild(node.nodeName);
-                    node.nameShowed = false;
+                if (node.textShowed){
+                    app.stage.removeChild(node.nodeText);
+                    node.textShowed = false;
                     nodes[nodeId] = node;
-                    showMessage("Successfully hide the element","success");
+                    showMessage("Successfully hide text from the element","success");
                 }else{
-                    showMessage("The name of given element has not been showned!","info");
+                    showMessage("The text for given element has not been showned!","info");
                 }
             }else{
                 showMessage("There is no such element!","error");
@@ -435,40 +455,46 @@ function hide_name_submit(){
     }
 }
 
+
 // task 7
-function time_showing_name_submit(){
+function time_showing_text_submit(){
     if (!importedJSON){
         showMessage("You need to import the JSON file first!","info");
     }else{
-        let nodeId = document.getElementById('timeShowingNameId').value;
-        let time = document.getElementById('showingNameTime').value;
-        if (nodeId == "" || time == ""){
-            showMessage("You need to fill both textbox!","warning");
+        let nodeId = document.getElementById('timeShowingTextId').value;
+        let time = document.getElementById('showingTextTime').value;
+        let text = document.getElementById('timeShowingTextContent').value;
+        if (nodeId == "" || time == "" || text == ""){
+            showMessage("You need to fill all textboxes!","warning");
         } else if(time <= 0 || time > 20) {
             showMessage("Time must be in a range 1s to 20s!", "warning");
         } else{
             let node = findNode(nodeId);
-            if (!node.nameShowed){
-                nodeName = new PIXI.Text(node.name, {fontFamily : 'Arial', fontSize: 16, fill: "black"});
-                nodeName.x = node.position.x;
-                nodeName.y = node.position.y - node.graphics.height * 0.85;
-                nodeName.anchor.set(0.5);
-                nodeName.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
-                node.nodeName = nodeName;
-                app.stage.addChild(nodeName);
-                node.nameShowed = true;
+            if (!node.textShowed){
+                nodeText = new PIXI.Text(text, {fontFamily : 'Arial', fontSize: 14, fill: "black", wordWrap: true, wordWrapWidth: 350});
+                nodeText.x = node.position.x;
+                nodeText.y = node.position.y - node.graphics.height * 0.85;
+                nodeText.anchor.set(0.5);
+                nodeText.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xCC8899', quality: 0.1})];
+                node.nodeText = nodeText;
+                app.stage.addChild(nodeText);
+                node.textShowed = true;
                 nodes[nodeId] = node;
-                showMessage("Successfully showed the name of the element","success");
+                showMessage("Successfully showed the text for the element","success");
+            } else {
+                node.nodeText.text = text;
+                showMessage("Successfully showed the text for the element","success");
             }
             setTimeout(function(){
-                app.stage.removeChild(node.nodeName);
-                node.nameShowed = false;
+                app.stage.removeChild(node.nodeText);
+                node.textShowed = false;
                 nodes[nodeId] = node;
-                showMessage("Successfully hide the element","success");
+                showMessage("Successfully hide the text from the element","success");
             }, time * 1000);
         }
     }
 }
+
 
 // task 8
 function send_a_message_submit(){
@@ -534,6 +560,7 @@ function send_a_message_submit(){
         }
     }
 }
+
 
 // task 9
 function send_a_message_highlight_submit(){
@@ -604,6 +631,15 @@ function send_a_message_highlight_submit(){
 
                 }
 
+                let lastVertice = findVertice(path[path.length - 1]);
+                let lastNode = findNode(lastVertice.to);
+                setTimeout(function(){
+                    lastNode.graphics.filters = [new PIXI.filters.GlowFilter({ distance: 20, innerStrength: 0.5, outerStrength: 6, color: '0xFFD700', quality: 0.1})];
+                }, time * 1000);
+                setTimeout(function(){
+                    lastNode.graphics.filters = [];
+                }, time * 1000 + 3000);
+
                 setTimeout(function(){
                     showMessage("Succesfully sent a message!!", "success");
                     app.stage.removeChild(message); 
@@ -614,17 +650,17 @@ function send_a_message_highlight_submit(){
 }
 
 
-// ==== PIXIIIII ======
+// ==== PIXI variables ======
 let nodes = {};
 let vertices = {};
-// for task 8 purposes
+// for task 8 and task 9 purposes
 let message = new PIXI.Sprite.from("../images/message.png");
 message.x = 0;
 message.y = 0;
 message.height = 36;
 message.width = 24;
 message.anchor.set(0.5);
-//grid
+//grid, background
 let gridLine1 = new PIXI.Graphics();
 let gridLine2 = new PIXI.Graphics();
 // is left rotation
@@ -636,10 +672,13 @@ let showBackground = false;
 let importedJSON = false;
 
 
+// whenever window resizes, PIXI,js window will also scale to it
 window.addEventListener("resize", event => {
     scaleToWindow(app.view);
 });
 
+
+// function that scales PIXI.js window to browser window
 function scaleToWindow(appWin){
     appWin.style.position = "absolute";
     appWin.style.width = (window.innerWidth * 0.75 - 10) + "px";
@@ -648,32 +687,30 @@ function scaleToWindow(appWin){
     return appWin;
 }
 
+
+// function that draws line in PIXI.js
 function drawLine(graphics, x1, y1, x2, y2, color){
     graphics.lineStyle(2.5, color, 1);
     graphics.moveTo(x1, y1);
     graphics.lineTo(x2, y2);
-    //graphics.quadraticCurveTo(x1, y2, x2, y2);
     return graphics;
 }
 
+
+// drawing everything that goes background in PIXI,js
 function drawBackgroundGrid(){
-    gridLine1.lineStyle(0.7
-                        , "0x343535", 1);
-    gridLine2.lineStyle(0.7
-                        , "0x343535", 1);
+    gridLine1.lineStyle(0.7, "0x343535", 1);
+    gridLine2.lineStyle(0.7, "0x343535", 1);
     gridLine1.rotation = Math.PI * 0.29;
     gridLine2.rotation = Math.PI * 0.21;
-
     for (let i = -2 * app.view.height; i <= 3 * app.view.height; i += 50) {
         gridLine2.moveTo(-2 * app.view.width, i);
         gridLine2.lineTo(3 * app.view.width, i);
     }
-
     for (let i = -2 * app.view.width; i <= 3 * app.view.width; i += 50) {
         gridLine1.moveTo(i, 3 * app.view.height);
         gridLine1.lineTo(i, -2 * app.view.height);
     }
-
     container.addChild(gridLine1);
     container.addChild(gridLine2);
     if (showBackground){
@@ -751,17 +788,25 @@ function drawBackgroundGrid(){
     plusSign.height = 1/28 * app.view.height;
     plusSign.width = 1/32 * app.view.width;
     plusSign.anchor.set(0.5);
+    plusSign.tint = '0x000000';
     plusSign.interactive = true;
     plusSign.buttonMode = true;
     plusSign.on('pointerdown', function(){
+        minusSign.tint = '0x000000';
         for (var key in nodes){
             nodes[key].graphics.scale.x *= 1.05;
             nodes[key].graphics.scale.y *= 1.05;
             if (nodes[key].graphics.width > 150){
                 nodes[key].graphics.width = 150;
+                plusSign.tint = '0xFFFFFF';
+            } else {
+                plusSign.tint = '0x000000';
             }
             if (nodes[key].graphics.height > 200){
                 nodes[key].graphics.height = 200;
+                plusSign.tint = '0xFFFFFF';
+            } else {
+                plusSign.tint = '0x000000';
             }
             updateNodes();
             for (var key in vertices){
@@ -786,17 +831,25 @@ function drawBackgroundGrid(){
     minusSign.height = 1/28 * app.view.height;
     minusSign.width = 1/32 * app.view.width;
     minusSign.anchor.set(0.5);
+    minusSign.tint = '0x000000';
     minusSign.interactive = true;
     minusSign.buttonMode = true;
     minusSign.on('pointerdown', function(){
+        plusSign.tint = '0x000000';
         for (var key in nodes){
             nodes[key].graphics.scale.x *= 0.95;
             nodes[key].graphics.scale.y *= 0.95;
             if (nodes[key].graphics.width < 45){
                 nodes[key].graphics.width = 45;
+                minusSign.tint = '0xFFFFFF';
+            } else {
+                minusSign.tint = '0x000000';
             }
             if (nodes[key].graphics.height < 60){
                 nodes[key].graphics.height = 60;
+                minusSign.tint = '0xFFFFFF';
+            } else {
+                minusSign.tint = '0x000000';
             }
             updateNodes();
             for (var key in vertices){
@@ -815,6 +868,7 @@ function drawBackgroundGrid(){
         }
     });
 
+    // lines that form black frame
     let lines = new PIXI.Graphics();
     lines.lineStyle(2, "0x000000", 1);
     lines.moveTo(4/8 * app.view.width, app.view.height);
@@ -834,6 +888,8 @@ function drawBackgroundGrid(){
     app.stage.addChild(lines);
 }
 
+
+// function that rotates map based on the direction
 function rotateMap(){
     if (isLeft){
         coef = 1;
@@ -851,9 +907,9 @@ function rotateMap(){
         nodes[key].position.x = x1;
         nodes[key].position.y = y1;
 
-        if (nodes[key].nameShowed){
-            nodes[key].nodeName.x = x1;
-            nodes[key].nodeName.y = y1 - nodes[key].graphics.height * 0.27;
+        if (nodes[key].textShowed){
+            nodes[key].nodeText.x = x1;
+            nodes[key].nodeText.y = y1 - nodes[key].graphics.height * 0.9;
         }
     }
 
@@ -874,6 +930,8 @@ function rotateMap(){
     container.rotation += coef * 0.003;
 }
 
+
+// removing everything from the PIXI.js window (but calling draw background function after)
 function cleanStage(){
     for (var i = app.stage.children.length - 1; i >= 0; i--) {	
         app.stage.removeChild(app.stage.children[i]);
@@ -882,6 +940,9 @@ function cleanStage(){
     vertices = {};
     drawBackgroundGrid();
 }
+
+
+// ======================= PIXI main ==============================
 
 const app = new PIXI.Application({ antialias: true, transparent: true });
 const displayDiv = document.getElementById('main');
@@ -893,7 +954,6 @@ app.view.style.display = "block";
 
 displayDiv.appendChild(app.view);
 
-// for id of sprites
 let textId = new PIXI.Text("ID : -", {fontFamily : 'Arial', fontSize: 16, fill: "black"});
 textId.x = 14/16 * app.view.width;
 textId.y = 27/28 * app.view.height;
